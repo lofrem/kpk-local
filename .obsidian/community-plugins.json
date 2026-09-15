@@ -1,4 +1,6 @@
 [
   "obsidian-excalidraw-plugin",
-  "obsidian-latex-suite"
+  "obsidian-latex-suite",
+  "pdf-writer",
+  "pdf-plus"
 ]
