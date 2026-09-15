@@ -166,7 +166,7 @@
   "previousRelease": "2.27.3",
   "showReleaseNotes": true,
   "useDeclarativeSettings": true,
-  "excalidrawMasteryPromoCollapsed": false,
+  "excalidrawMasteryPromoCollapsed": true,
   "compareManifestToPluginVersion": true,
   "showNewVersionNotification": true,
   "latexBoilerplate": "\\color{green}e=mc^2",
