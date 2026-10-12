@@ -1,0 +1,309 @@
+/* ===== Floating toolbar ===== */
+.tm-floating-toolbar {
+  /* We mount on <body> and rely on `position: fixed` so transformed editor
+   * ancestors cannot anchor the toolbar to themselves. (Position lives in
+   * CSS rather than inline styles; only the dynamic `top`/`left` are set
+   * imperatively by the view plugin.) */
+  position: fixed;
+  /* Stay above ordinary editor widgets but below Obsidian's modal/popover
+   * layers so a settings dialog (or any other Modal) is never visually
+   * buried by the toolbar. `--layer-popover` is well below `--layer-modal`
+   * in Obsidian, which gives us the right stacking order out of the box. */
+  z-index: var(--layer-popover, 30);
+  pointer-events: auto;
+  /* Row layout: content groups on the left, collapse toggle on the right. */
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+  padding: 4px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-size: var(--font-ui-smaller);
+  user-select: none;
+}
+
+.tm-floating-toolbar.is-hidden {
+  display: none;
+}
+
+/* Inner wrapper that stacks functional groups vertically. 
+ * Has its own overflow:hidden so the collapse animation clips content
+ * without affecting the toggle button. */
+.tm-floating-toolbar .tm-toolbar-content {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  transition: width 0.3s ease, opacity 0.25s ease;
+}
+
+/* While the collapse animation is in flight, the JS toggle adds
+ * `is-size-locked` and writes the measured size into CSS custom properties
+ * (`--tm-locked-width` / `--tm-locked-height`) via setCssProps. The class is
+ * removed (and the variables cleared) once the transition settles, so the
+ * content can reflow naturally on subsequent layout changes. */
+.tm-floating-toolbar .tm-toolbar-content.is-size-locked {
+  width: var(--tm-locked-width);
+  height: var(--tm-locked-height);
+}
+
+.tm-floating-toolbar.is-collapsed .tm-toolbar-content {
+  width: 0;
+  opacity: 0;
+  padding: 0;
+  gap: 0;
+}
+
+/* Collapse toggle: right edge, vertically centered, same size as toolbar buttons. */
+.tm-floating-toolbar .tm-collapse-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  min-height: 26px;
+  padding: 4px;
+  margin-left: 2px;
+  border-left: 1px solid var(--background-modifier-border);
+  cursor: pointer;
+  flex-shrink: 0;
+  background: transparent;
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+  border-radius: 4px;
+  color: var(--text-muted);
+  transition: margin 0.25s ease;
+}
+.tm-floating-toolbar .tm-collapse-toggle:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+/* When collapsed the toolbar slides left past the viewport; content stays in
+ * the DOM to preserve its measured width for the slide calculation. The
+ * viewport edge naturally clips it. */
+
+/* Toggle icon: same size as toolbar button icons + smooth rotation. */
+.tm-floating-toolbar .tm-collapse-toggle .tm-icon {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s ease;
+}
+.tm-floating-toolbar.is-collapsed .tm-collapse-toggle .tm-icon {
+  transform: rotate(180deg);
+}
+
+/* Live Preview merged-cell placeholder: anchors keep their colspan/rowspan
+ * attributes, while the cells they cover are hidden via this class so the
+ * row/column geometry collapses around the anchor. Toggled in JS via
+ * classList instead of writing element.style.display directly. */
+table td.tm-merge-placeholder,
+table th.tm-merge-placeholder {
+  display: none;
+}
+
+.tm-floating-toolbar .tm-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1px;
+  padding: 2px 3px;
+  /* Visual separator between vertically-stacked groups. */
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tm-floating-toolbar .tm-group:last-child {
+  border-bottom: none;
+}
+
+.tm-floating-toolbar button.tm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.tm-floating-toolbar button.tm-btn:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.tm-floating-toolbar button.tm-btn.is-active {
+  background: var(--background-modifier-active-hover);
+  color: var(--text-accent);
+}
+
+.tm-floating-toolbar button.tm-btn .tm-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== Modal grid editor ===== */
+.tm-modal {
+  /* Ensure the modal is wide enough that multi-column tables
+   * are never squeezed down to a single visible column. */
+  min-width: min(90vw, 600px);
+}
+
+.tm-modal .modal-content {
+  padding: 0;
+  overflow: visible;
+}
+
+.tm-grid-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+}
+
+.tm-grid-toolbar button {
+  height: 28px;
+  padding: 0 10px;
+}
+
+.tm-grid-toolbar button.tm-grid-icon-btn {
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tm-grid-toolbar button.tm-grid-icon-btn .svg-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.tm-grid-wrap {
+  max-height: 60vh;
+  overflow: auto;
+  padding: 8px;
+}
+
+table.tm-grid {
+  border-collapse: collapse;
+  /* `table-layout: auto` lets the browser size columns to their content.
+   * `width: 100%` fills the wrapper; wider tables cause `.tm-grid-wrap`
+   * to scroll horizontally. */
+  table-layout: auto;
+  width: 100%;
+}
+
+table.tm-grid th,
+table.tm-grid td {
+  border: 1px solid var(--background-modifier-border);
+  padding: 4px 8px;
+  min-width: 80px;
+  vertical-align: top;
+  position: relative;
+}
+
+table.tm-grid th {
+  background: var(--background-secondary);
+  font-weight: 600;
+}
+
+table.tm-grid td.tm-selected,
+table.tm-grid th.tm-selected {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: -2px;
+  background: var(--background-modifier-hover);
+}
+
+table.tm-grid .tm-cell-edit {
+  display: block;
+  width: 100%;
+  min-height: 1.4em;
+  outline: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.tm-grid-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+}
+
+/* ===== Reading view & Live Preview rebuilt tables ===== */
+/* When the post-processor / live-preview view plugin rewrites a table,
+ * Obsidian's widget-scoped CSS (e.g. `.cm-table-widget td`) no longer matches
+ * because we replace `<table>`'s children. Re-establish the cell metrics here
+ * so the rebuilt table never looks more cramped than the original GFM render.
+ */
+table.tm-rendered {
+  border-collapse: collapse;
+  margin: 0.5em 0;
+}
+
+table.tm-rendered caption {
+  caption-side: top;
+  font-style: italic;
+  color: var(--text-muted);
+  padding: 4px 0;
+  text-align: center;
+}
+
+table.tm-rendered th,
+table.tm-rendered td {
+  padding: var(--table-cell-padding, 6px 12px);
+  border: 1px solid var(--background-modifier-border);
+  vertical-align: top;
+  line-height: var(--line-height-normal, 1.5);
+}
+
+table.tm-rendered th {
+  background: var(--background-secondary);
+  font-weight: var(--font-semibold, 600);
+}
+
+table.tm-rendered tbody + tbody {
+  border-top: 2px solid var(--background-modifier-border);
+}
+
+/* Highlight merged anchors so the user can spot the merged region at a
+ * glance. The legacy `.tm-merged-anchor` class is kept for backward compat,
+ * but the actual marker on rendered tables is `data-tm-merge="anchor"`
+ * (set by Live Preview) and the `[rowspan]` / `[colspan]` attributes
+ * (set by Reading-view rebuild + grid editor). */
+table.tm-rendered td.tm-merged-anchor,
+table.tm-rendered th.tm-merged-anchor,
+table.tm-rendered td[rowspan]:not([rowspan="1"]),
+table.tm-rendered th[rowspan]:not([rowspan="1"]),
+table.tm-rendered td[colspan]:not([colspan="1"]),
+table.tm-rendered th[colspan]:not([colspan="1"]),
+table td[data-tm-merge="anchor"],
+table th[data-tm-merge="anchor"] {
+  background-color: var(--background-secondary-alt);
+}
+
+/* Vertically center the text inside any cell that spans more than one row.
+ * Covers all three renderers: Reading view (`table.tm-rendered td[rowspan]`),
+ * Live Preview (anchor cells flagged with `data-tm-merge="anchor"`), and the
+ * modal grid editor (`table.tm-grid`). Merging up / down should feel
+ * symmetric — the merged text sits between the rows it now spans. */
+table.tm-rendered td[rowspan]:not([rowspan="1"]),
+table.tm-rendered th[rowspan]:not([rowspan="1"]),
+table td[data-tm-merge="anchor"][rowspan]:not([rowspan="1"]),
+table th[data-tm-merge="anchor"][rowspan]:not([rowspan="1"]),
+table.tm-grid td[rowspan]:not([rowspan="1"]),
+table.tm-grid th[rowspan]:not([rowspan="1"]) {
+  vertical-align: middle;
+}
